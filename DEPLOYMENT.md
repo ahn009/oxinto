@@ -17,7 +17,7 @@ npm run migrate
 npm run seed
 
 # 4. Start in development mode (with hot-reload)
-npm run dev
+npm run dev:all
 
 # App available at: http://localhost:3000
 # Chat UI:          http://localhost:3000

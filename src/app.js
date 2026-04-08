@@ -8,14 +8,13 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const compression = require('compression');
 const cron = require('node-cron');
-const path = require('path');
 const cookieParser = require('cookie-parser');
 
 const { initDatabase } = require('./config/database');
 const SessionModel = require('./models/session.model');
 const WebhookController = require('./controllers/webhook.controller');
 const SessionController = require('./controllers/session.controller');
-const { apiKeyAuth, verifyTwilioSignature, verifyMetaSignature, requireAuth, requireAuthPage } = require('./middleware/auth');
+const { apiKeyAuth, verifyTwilioSignature, verifyMetaSignature, requireAuth } = require('./middleware/auth');
 const AuthController = require('./controllers/auth.controller');
 const { generalLimiter, webhookLimiter } = require('./middleware/rateLimiter');
 const { validate, schemas } = require('./middleware/validation');
@@ -52,7 +51,7 @@ app.use(helmet({
   },
 }));
 
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000').split(',');
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000,http://localhost:3001').split(',').map(o => o.trim());
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV === 'development') {
@@ -86,14 +85,6 @@ app.use((req, res, next) => {
 
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
-
-// ── Protected HTML pages — MUST be before express.static so auth guard fires ──
-// express.static would otherwise serve index.html directly, bypassing requireAuthPage
-app.get('/',           requireAuthPage, (req, res) => res.sendFile(path.join(__dirname, '..', 'web', 'index.html')));
-app.get('/index.html', requireAuthPage, (req, res) => res.sendFile(path.join(__dirname, '..', 'web', 'index.html')));
-
-// Serve all other static assets (login, signup, verify-email, forgot-password, CSS, JS…)
-app.use(express.static(path.join(__dirname, '..', 'web'), { index: false }));
 
 // Apply general rate limiting
 app.use('/api/', generalLimiter);
@@ -151,9 +142,9 @@ app.post('/api/session/reset/:id', apiKeyAuth, validate(schemas.sessionId), Sess
 // Product catalog (public read)
 app.get('/api/products', validate(schemas.productFilter), SessionController.getProducts);
 
-// Unmatched routes — redirect to login
-app.get('*', (req, res) => {
-  res.redirect('/login.html');
+// Unknown API routes — return 404 JSON. UI routing is handled by Next.js frontend.
+app.use((req, res) => {
+  res.status(404).json({ error: 'Not found' });
 });
 
 // ─────────────────────────────────────────────
