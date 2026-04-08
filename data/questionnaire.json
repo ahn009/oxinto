@@ -1,0 +1,135 @@
+{
+  "version": "1.0",
+  "description": "Smart Product Advisor questionnaire configuration",
+  "questions": [
+    {
+      "id": "q1",
+      "text": {
+        "en": "What problem are you trying to solve?",
+        "pt": "Qual problema você está tentando resolver?"
+      },
+      "type": "multiple_choice",
+      "options": {
+        "en": ["Improve audio experience", "Stay connected on the go", "Enhance productivity", "Gift for someone"],
+        "pt": ["Melhorar experiência de áudio", "Manter conectado em movimento", "Aumentar produtividade", "Presente para alguém"]
+      },
+      "tags": {
+        "0": ["audio", "quality"],
+        "1": ["portable", "wireless"],
+        "2": ["professional", "focus"],
+        "3": ["gift"]
+      }
+    },
+    {
+      "id": "q2",
+      "text": {
+        "en": "Who is this product for?",
+        "pt": "Para quem é este produto?"
+      },
+      "type": "multiple_choice",
+      "options": {
+        "en": ["Myself", "Someone else", "A business", "Not sure yet"],
+        "pt": ["Para mim", "Para outra pessoa", "Para uma empresa", "Ainda não sei"]
+      },
+      "tags": {
+        "0": ["personal"],
+        "1": ["gift"],
+        "2": ["professional", "bulk"],
+        "3": []
+      }
+    },
+    {
+      "id": "q3",
+      "text": {
+        "en": "What is most important to you?",
+        "pt": "O que é mais importante para você?"
+      },
+      "type": "multiple_choice",
+      "options": {
+        "en": ["Price (best value)", "Quality (best performance)", "Speed (fast delivery)", "Features (most options)"],
+        "pt": ["Preço (melhor custo-benefício)", "Qualidade (melhor desempenho)", "Velocidade (entrega rápida)", "Recursos (mais opções)"]
+      },
+      "tags": {
+        "0": ["budget", "value"],
+        "1": ["premium", "quality"],
+        "2": ["fast-delivery"],
+        "3": ["feature-rich"]
+      }
+    },
+    {
+      "id": "q4",
+      "text": {
+        "en": "What is your budget range?",
+        "pt": "Qual é o seu intervalo de orçamento?"
+      },
+      "type": "multiple_choice",
+      "options": {
+        "en": ["Under $50", "$50–$100", "$100–$200", "$200+"],
+        "pt": ["Menos de R$250", "R$250–R$500", "R$500–R$1000", "R$1000+"]
+      },
+      "budgetRanges": [
+        {"min": 0, "max": 50},
+        {"min": 50, "max": 100},
+        {"min": 100, "max": 200},
+        {"min": 200, "max": null}
+      ],
+      "tags": {
+        "0": ["budget"],
+        "1": ["mid-range"],
+        "2": ["premium"],
+        "3": ["luxury"]
+      },
+      "branchOn": {
+        "3": "q4b"
+      }
+    },
+    {
+      "id": "q4b",
+      "text": {
+        "en": "Since your budget is $200+, are you interested in a complete bundle (product + accessories + warranty)?",
+        "pt": "Como seu orçamento é R$1000+, você tem interesse em um pacote completo (produto + acessórios + garantia)?"
+      },
+      "type": "multiple_choice",
+      "optional": true,
+      "options": {
+        "en": ["Yes, bundle sounds great!", "No, just the main product"],
+        "pt": ["Sim, pacote completo!", "Não, apenas o produto principal"]
+      },
+      "tags": {
+        "0": ["bundle", "luxury"],
+        "1": ["luxury"]
+      }
+    },
+    {
+      "id": "q5",
+      "text": {
+        "en": "How urgently do you need this?",
+        "pt": "Com que urgência você precisa disso?"
+      },
+      "type": "multiple_choice",
+      "options": {
+        "en": ["Today (express delivery)", "This week", "Next month", "Just browsing"],
+        "pt": ["Hoje (entrega expressa)", "Esta semana", "Próximo mês", "Só navegando"]
+      },
+      "tags": {
+        "0": ["urgent", "express"],
+        "1": ["standard"],
+        "2": ["flexible"],
+        "3": ["browsing"]
+      }
+    },
+    {
+      "id": "q6",
+      "text": {
+        "en": "Any specific requirements or preferences? (optional)",
+        "pt": "Algum requisito ou preferência específica? (opcional)"
+      },
+      "type": "text",
+      "optional": true,
+      "placeholder": {
+        "en": "e.g., waterproof, noise-canceling, specific color...",
+        "pt": "ex: à prova d'água, cancelamento de ruído, cor específica..."
+      }
+    }
+  ]
+}
