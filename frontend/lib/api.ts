@@ -66,12 +66,6 @@ export async function resendOtp(tempUserId: string) {
   });
 }
 
-export async function googleAuth(idToken: string) {
-  return request<{ token: string; user: User }>('/api/auth/google', {
-    method: 'POST', body: JSON.stringify({ idToken }),
-  });
-}
-
 export async function logout() {
   return request<{ message: string }>('/api/auth/logout', { method: 'POST' });
 }

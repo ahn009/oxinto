@@ -99,12 +99,6 @@ const schemas = {
     }),
   },
 
-  googleAuth: {
-    body: Joi.object({
-      idToken: Joi.string().required(),
-    }),
-  },
-
   forgotPassword: {
     body: Joi.object({
       email: Joi.string().email().required(),

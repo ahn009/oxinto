@@ -69,6 +69,50 @@ const UserModel = {
     }
   },
 
+  /**
+   * Find a user by their Google OAuth ID via the google_users join table.
+   * Returns the full users row, or null if not found.
+   */
+  async findByGoogleId(googleId) {
+    const db = getDb();
+    if (getDbType() === 'sqlite') {
+      const link = db.prepare('SELECT user_id FROM google_users WHERE google_uid = ?').get(googleId);
+      if (!link) return null;
+      return db.prepare('SELECT * FROM users WHERE id = ?').get(link.user_id) || null;
+    }
+    return null;
+  },
+
+  /**
+   * Create a new user for Google OAuth sign-in (no usable password).
+   * Inserts into users then links via google_users table.
+   */
+  async createGoogleUser({ email, name, googleId }) {
+    // Random unusable password so NOT NULL constraint is satisfied
+    const passwordHash = await hashPassword(crypto.randomUUID());
+    const user = await this.create({ name, email, passwordHash });
+    const db = getDb();
+    if (getDbType() === 'sqlite') {
+      db.prepare(
+        'INSERT OR IGNORE INTO google_users (id, email, google_uid, name, user_id) VALUES (?, ?, ?, ?, ?)'
+      ).run(crypto.randomUUID(), email, googleId, name, user.id);
+    }
+    return user;
+  },
+
+  /**
+   * Link an existing email/password user to a Google OAuth ID.
+   * Inserts into google_users if not already present.
+   */
+  async linkGoogleId(userId, email, name, googleId) {
+    const db = getDb();
+    if (getDbType() === 'sqlite') {
+      db.prepare(
+        'INSERT OR IGNORE INTO google_users (id, email, google_uid, name, user_id) VALUES (?, ?, ?, ?, ?)'
+      ).run(crypto.randomUUID(), email, googleId, name, userId);
+    }
+  },
+
   async getActivitySummary(userId) {
     const db = getDb();
     if (getDbType() === 'sqlite') {

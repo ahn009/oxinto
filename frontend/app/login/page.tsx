@@ -3,8 +3,6 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { signInWithPopup } from 'firebase/auth';
-import { auth, googleProvider } from '@/lib/firebase';
 import LeftPanel from '@/components/LeftPanel';
 import * as api from '@/lib/api';
 
@@ -51,24 +49,10 @@ export default function LoginPage() {
     }
   }
 
-  async function signInWithGoogle() {
+  function signInWithGoogle() {
     setError(''); setSuccess('');
     setGoogleLoading(true);
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const idToken = await result.user.getIdToken();
-      const data = await api.googleAuth(idToken);
-      localStorage.setItem('smart_token', data.token);
-      localStorage.setItem('smart_user', JSON.stringify(data.user));
-      localStorage.removeItem('smart_session_id');
-      router.push('/');
-    } catch (err: any) {
-      if (err.code !== 'auth/popup-closed-by-user') {
-        setError(err.message || 'Google sign-in failed. Please try again.');
-      }
-    } finally {
-      setGoogleLoading(false);
-    }
+    window.location.href = '/auth/google';
   }
 
   const s = {

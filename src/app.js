@@ -18,6 +18,8 @@ const { apiKeyAuth, verifyTwilioSignature, verifyMetaSignature, requireAuth } = 
 const AuthController = require('./controllers/auth.controller');
 const { generalLimiter, webhookLimiter } = require('./middleware/rateLimiter');
 const { validate, schemas } = require('./middleware/validation');
+// Passport must be required after dotenv so GOOGLE_* env vars are available
+const passport = require('./config/passport');
 // eslint-disable-next-line no-unused-vars
 const logger = require('./utils/logger');
 
@@ -37,16 +39,8 @@ app.use(helmet({
       styleSrc:      ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
       fontSrc:       ["'self'", 'https://fonts.gstatic.com'],
       imgSrc:        ["'self'", 'data:', 'https:'],
-      connectSrc:    [
-        "'self'",
-        'https://identitytoolkit.googleapis.com',
-        'https://securetoken.googleapis.com',
-        'https://oauth2.googleapis.com',
-        'https://www.googleapis.com',
-        'https://*.firebaseio.com',
-        'wss://*.firebaseio.com',
-      ],
-      frameSrc:      ['https://accounts.google.com', 'https://*.firebaseapp.com'],
+      connectSrc:    ["'self'"],
+      frameSrc:      ['https://accounts.google.com'],
     },
   },
 }));
@@ -66,6 +60,8 @@ app.use(cors({
 app.use(compression());
 app.use(cookieParser());
 app.use(morgan('combined', { stream: { write: (msg) => logger.info(msg.trim()) } }));
+// Initialize Passport (no session middleware — stateless JWT only)
+app.use(passport.initialize());
 
 // Capture raw body ONLY for signature-verified channels (WhatsApp, Instagram).
 // The web chat route does NOT need this — it uses standard express.json() parsing.
@@ -93,15 +89,18 @@ app.use('/api/', generalLimiter);
 //  Routes
 // ─────────────────────────────────────────────
 
-// ── Public config (Firebase settings from env) ───────────
-app.get('/api/config/client', AuthController.clientConfig);
+// ── Google OAuth routes (Passport redirect flow, no session) ─────────────────
+app.get('/auth/google',          AuthController.redirectToGoogle);
+app.get('/auth/google/callback',
+  passport.authenticate('google', { session: false, failWithError: true }),
+  AuthController.handleGoogleCallback
+);
 
 // ── Auth routes ──────────────────────────────────────────
 app.post('/api/auth/signup',           validate(schemas.signup),         AuthController.signup);
 app.post('/api/auth/send-otp',         validate(schemas.sendOtp),        AuthController.sendOtp);
 app.post('/api/auth/verify-otp',       validate(schemas.verifyOtp),      AuthController.verifyOtp);
 app.post('/api/auth/resend-otp',       validate(schemas.resendOtp),      AuthController.resendOtp);
-app.post('/api/auth/google',           validate(schemas.googleAuth),     AuthController.googleAuth);
 app.post('/api/auth/login',            validate(schemas.login),          AuthController.login);
 app.post('/api/auth/logout',           requireAuth,                      AuthController.logout);
 app.get('/api/auth/me',                requireAuth,                      AuthController.me);

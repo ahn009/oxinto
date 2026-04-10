@@ -1,8 +1,7 @@
 'use strict';
 
-const crypto = require('crypto');
-const https = require('https');
 const jwt = require('jsonwebtoken');
+const passport = require('passport');
 const { v4: uuidv4 } = require('uuid');
 const UserModel = require('../models/user.model');
 const { hashPassword, verifyPassword } = require('../models/user.model');
@@ -71,78 +70,11 @@ function dbGet(sql, params = []) {
   return null;
 }
 
-// ── Verify Firebase ID token via Identity Toolkit REST API ────────────────────
-// Firebase Auth ID tokens have iss=https://securetoken.google.com/<project>
-// and must be verified via the Identity Toolkit, NOT oauth2.googleapis.com/tokeninfo
-function verifyFirebaseToken(idToken) {
-  return new Promise((resolve, reject) => {
-    const apiKey   = process.env.FIREBASE_SERVER_API_KEY || process.env.FIREBASE_API_KEY;
-    const postBody = JSON.stringify({ idToken });
-
-    const options = {
-      hostname: 'identitytoolkit.googleapis.com',
-      path:     `/v1/accounts:lookup?key=${apiKey}`,
-      method:   'POST',
-      headers:  {
-        'Content-Type':   'application/json',
-        'Content-Length': Buffer.byteLength(postBody),
-      },
-    };
-
-    const req = https.request(options, (res) => {
-      let data = '';
-      res.on('data', (chunk) => { data += chunk; });
-      res.on('end', () => {
-        try {
-          const body = JSON.parse(data);
-          if (body.error) {
-            return reject(new Error(body.error.message || 'Invalid Firebase token'));
-          }
-          const user = body.users && body.users[0];
-          if (!user)       return reject(new Error('No user found for token'));
-          if (!user.email) return reject(new Error('No email in Firebase token'));
-          // Normalise to the same shape the rest of the code expects
-          resolve({
-            email: user.email,
-            name:  user.displayName || '',
-            sub:   user.localId,          // Firebase UID used as googleUid
-            email_verified: user.emailVerified || false,
-          });
-        } catch (e) {
-          reject(e);
-        }
-      });
-    });
-
-    req.on('error', reject);
-    req.write(postBody);
-    req.end();
-  });
-}
-
 // ─────────────────────────────────────────────
 //  Controller
 // ─────────────────────────────────────────────
 
 const AuthController = {
-
-  /**
-   * GET /api/config/client
-   * Returns Firebase config from env vars (safe to expose — no server secrets here).
-   */
-  clientConfig(req, res) {
-    return res.json({
-      firebase: {
-        apiKey:            process.env.FIREBASE_API_KEY,
-        authDomain:        process.env.FIREBASE_AUTH_DOMAIN,
-        projectId:         process.env.FIREBASE_PROJECT_ID,
-        storageBucket:     process.env.FIREBASE_STORAGE_BUCKET,
-        messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-        appId:             process.env.FIREBASE_APP_ID,
-        measurementId:     process.env.FIREBASE_MEASUREMENT_ID,
-      },
-    });
-  },
 
   /**
    * POST /api/auth/signup  (legacy — direct signup without OTP, kept for backward compat)
@@ -292,70 +224,6 @@ const AuthController = {
   },
 
   /**
-   * POST /api/auth/google
-   * Verify Firebase ID token → create or login Google user → return JWT.
-   */
-  async googleAuth(req, res) {
-    const { idToken } = req.body;
-    try {
-      let payload;
-      try {
-        payload = await verifyFirebaseToken(idToken);
-      } catch (verifyErr) {
-        logger.warn('Firebase token verify failed:', verifyErr.message);
-        return res.status(401).json({ error: 'Invalid Google sign-in token.' });
-      }
-
-      const { email, name, sub: googleUid } = payload;
-      if (!email) return res.status(400).json({ error: 'No email provided by Google.' });
-
-      const lowerEmail = email.toLowerCase();
-
-      // Check google_users table
-      let googleEntry = dbGet('SELECT * FROM google_users WHERE google_uid = ?', [googleUid]);
-
-      let user;
-      if (googleEntry) {
-        // Existing Google user — load their account
-        user = await UserModel.findById(googleEntry.user_id);
-        if (!user) {
-          // Dangling entry — clean up and re-create
-          dbRun('DELETE FROM google_users WHERE google_uid = ?', [googleUid]);
-          googleEntry = null;
-        }
-      }
-
-      if (!googleEntry) {
-        // Check if email already registered via email/password
-        user = await UserModel.findByEmail(lowerEmail);
-
-        if (!user) {
-          // Brand-new user via Google — create account (no password)
-          const passwordHash = await hashPassword(uuidv4()); // random unusable password
-          user = await UserModel.create({ name: name || lowerEmail.split('@')[0], email: lowerEmail, passwordHash });
-          logger.info(`New Google user created: ${lowerEmail}`);
-        }
-
-        dbRun(
-          'INSERT OR IGNORE INTO google_users (id, email, google_uid, name, user_id) VALUES (?, ?, ?, ?, ?)',
-          [uuidv4(), lowerEmail, googleUid, name || '', user.id]
-        );
-      }
-
-      await UserModel.updateLastSeen(user.id);
-      await UserModel.trackActivity({ userId: String(user.id), action: 'login', data: { method: 'google', email: user.email } });
-
-      const token = signToken(user);
-      logger.info(`Google sign-in: ${lowerEmail}`);
-      setAuthCookie(res, token);
-      return res.status(200).json({ token, user: { id: user.id, name: user.name, email: user.email } });
-    } catch (err) {
-      logger.error('google-auth error:', err);
-      return res.status(500).json({ error: 'Internal server error' });
-    }
-  },
-
-  /**
    * POST /api/auth/login
    */
   async login(req, res) {
@@ -449,6 +317,50 @@ const AuthController = {
       logger.error('forgot-password error:', err);
       return res.status(500).json({ error: 'Failed to send reset email.' });
     }
+  },
+
+  /**
+   * GET /auth/google
+   * Initiates the Google OAuth 2.0 redirect flow via Passport.
+   * No session created — stateless JWT only.
+   */
+  redirectToGoogle(req, res, next) {
+    return passport.authenticate('google', {
+      scope: ['profile', 'email'],
+      session: false,
+    })(req, res, next);
+  },
+
+  /**
+   * GET /auth/google/callback
+   * Called by Google after user grants/denies access.
+   * Passport has already verified the code and populated req.user.
+   * Generates a JWT, sets an httpOnly cookie, then redirects to the frontend
+   * /auth/callback page which persists the token in localStorage.
+   */
+  handleGoogleCallback(req, res) {
+    if (!req.user) {
+      logger.warn('Google OAuth callback reached without req.user');
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3001';
+      return res.redirect(`${frontendUrl}/auth/callback?error=auth_failed`);
+    }
+
+    const user = req.user;
+
+    // Fire-and-forget activity tracking (non-blocking)
+    UserModel.updateLastSeen(user.id).catch((e) => logger.error('updateLastSeen error:', e));
+    UserModel.trackActivity({
+      userId: String(user.id),
+      action: 'login',
+      data: { method: 'google_oauth', email: user.email },
+    }).catch((e) => logger.error('trackActivity error:', e));
+
+    const token = signToken(user);
+    logger.info(`Google OAuth login: ${user.email}`);
+    setAuthCookie(res, token);
+
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3001';
+    return res.redirect(`${frontendUrl}/auth/callback?token=${token}`);
   },
 
   /**
