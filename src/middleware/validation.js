@@ -40,14 +40,6 @@ function validate(schema) {
 // --- Schemas ---
 
 const schemas = {
-  signup: {
-    body: Joi.object({
-      name:     Joi.string().min(2).max(100).required(),
-      email:    Joi.string().email().required(),
-      password: Joi.string().min(8).max(128).required(),
-    }),
-  },
-
   login: {
     body: Joi.object({
       email:    Joi.string().email().required(),

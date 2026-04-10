@@ -97,7 +97,6 @@ app.get('/auth/google/callback',
 );
 
 // ── Auth routes ──────────────────────────────────────────
-app.post('/api/auth/signup',           validate(schemas.signup),         AuthController.signup);
 app.post('/api/auth/send-otp',         validate(schemas.sendOtp),        AuthController.sendOtp);
 app.post('/api/auth/verify-otp',       validate(schemas.verifyOtp),      AuthController.verifyOtp);
 app.post('/api/auth/resend-otp',       validate(schemas.resendOtp),      AuthController.resendOtp);

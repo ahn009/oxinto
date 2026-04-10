@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import * as api from '@/lib/api';
 import type { User, Product, Bundle, Offers, BotResponse as BotData } from '@/lib/api';
+import Header from '@/components/Header';
 
 type Message =
   | { type: 'text'; role: 'bot' | 'user'; text: string }
@@ -37,9 +39,11 @@ const SVG_USER = (
 
 // ── Component ──────────────────────────────────────────────────────────────
 export default function HomePage() {
+  const router = useRouter();
   const [user, setUser]    = useState<User | null>(null);
   const [token, setToken]  = useState<string | null>(null);
   const [lang, setLangState] = useState('en');
+  const [authChecked, setAuthChecked] = useState(false);
   const [messages, setMessages]       = useState<Message[]>([]);
   const [inputVal, setInputVal]       = useState('');
   const [isTyping, setIsTyping]       = useState(false);
@@ -47,13 +51,6 @@ export default function HomePage() {
   const [sessionId, setSessionId]     = useState<string | null>(null);
   const [isComplete, setIsComplete]   = useState(false);
   const [progress, setProgress]       = useState<{ step: number; total: number } | null>(null);
-  const [showModal, setShowModal]     = useState(false);
-  const [modalTab, setModalTab]       = useState<'login' | 'signup'>('login');
-  const [authEmail, setAuthEmail]     = useState('');
-  const [authPassword, setAuthPassword] = useState('');
-  const [authName, setAuthName]       = useState('');
-  const [authError, setAuthError]     = useState('');
-  const [authLoading, setAuthLoading] = useState(false);
   const [toast, setToast]             = useState('');
   const [toastVisible, setToastVisible] = useState(false);
   const chatRef   = useRef<HTMLDivElement>(null);
@@ -69,34 +66,25 @@ export default function HomePage() {
     const l = localStorage.getItem('smart_lang') || 'en';
     setLangState(l);
     if (t && u) {
-      // Verify token is still valid with the backend before trusting localStorage
       api.getMe()
         .then((me) => {
           setToken(t); setUser(me);
           userIdRef.current = 'user_' + me.id;
-          // Refresh localStorage user in case profile changed
           localStorage.setItem('smart_user', JSON.stringify(me));
-          setShowModal(false);
+          setAuthChecked(true);
           startSession(t, 'user_' + me.id, sid, l);
         })
         .catch(() => {
-          // Token invalid or expired — clear and show modal
           localStorage.removeItem('smart_token');
           localStorage.removeItem('smart_user');
           localStorage.removeItem('smart_session_id');
-          userIdRef.current = 'web_' + Math.random().toString(36).slice(2, 10);
-          localStorage.setItem('smart_user_id', userIdRef.current);
-          openModal();
+          router.replace('/login');
         });
     } else {
-      userIdRef.current = localStorage.getItem('smart_user_id') || ('web_' + Math.random().toString(36).slice(2, 10));
-      localStorage.setItem('smart_user_id', userIdRef.current);
-      openModal();
+      router.replace('/login');
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  function openModal() { setShowModal(true); setAuthError(''); }
 
   // ── Scroll ────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -166,13 +154,11 @@ export default function HomePage() {
       applyBotData(data, lang);
     } catch (err: any) {
       setIsTyping(false);
-      // Token expired mid-session — show auth modal
       if (err.message?.includes('401') || err.message?.includes('Authentication')) {
         if (typeof window !== 'undefined') {
           localStorage.removeItem('smart_token'); localStorage.removeItem('smart_user');
         }
-        setToken(null); setUser(null);
-        openModal();
+        router.replace('/login');
       } else {
         addMsg({ type:'text', role:'bot', text:'Connection error. Please try again.' });
       }
@@ -192,51 +178,16 @@ export default function HomePage() {
     await sendRaw('reset');
   }
 
-  // ── Auth handlers ────────────────────────────────────────────────────
-  async function handleLogin(e: React.FormEvent) {
-    e.preventDefault(); setAuthError(''); setAuthLoading(true);
-    try {
-      const data = await api.login(authEmail, authPassword);
-      onAuthSuccess(data.token, data.user);
-    } catch (err: any) {
-      setAuthError(err.message || 'Login failed. Please try again.');
-    } finally { setAuthLoading(false); }
-  }
-
-  async function handleSignup(e: React.FormEvent) {
-    e.preventDefault(); setAuthError(''); setAuthLoading(true);
-    try {
-      const data = await api.signup(authName, authEmail, authPassword);
-      onAuthSuccess(data.token, data.user);
-    } catch (err: any) {
-      setAuthError(err.message || 'Signup failed. Please try again.');
-    } finally { setAuthLoading(false); }
-  }
-
-  function onAuthSuccess(tkn: string, u: User) {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('smart_token', tkn);
-      localStorage.setItem('smart_user', JSON.stringify(u));
-    }
-    setToken(tkn); setUser(u);
-    userIdRef.current = 'user_' + u.id;
-    setSessionId(null); setMessages([]); setProgress(null);
-    setShowModal(false);
-    showToast(`Welcome, ${u.name}! 👋`);
-    startSession(tkn, 'user_' + u.id, null, lang);
-  }
-
   async function handleLogout() {
     try { await api.logout(); } catch {}
     if (typeof window !== 'undefined') {
       localStorage.removeItem('smart_token'); localStorage.removeItem('smart_user'); localStorage.removeItem('smart_session_id');
     }
-    setToken(null); setUser(null);
-    userIdRef.current = 'web_' + Math.random().toString(36).slice(2, 10);
-    setSessionId(null); setMessages([]); setProgress(null);
-    showToast('Signed out');
-    openModal();
+    router.replace('/login');
   }
+
+  // ── Guard ─────────────────────────────────────────────────────────────
+  if (!authChecked || !user) return null;
 
   // ── Render ────────────────────────────────────────────────────────────
   const progressPct = progress
@@ -251,83 +202,7 @@ export default function HomePage() {
       <div style={{ position:'fixed', top:-200, right:-200, width:600, height:600, background:'radial-gradient(circle,rgba(99,102,241,0.08) 0%,transparent 70%)', pointerEvents:'none', zIndex:0 }}/>
       <div style={{ position:'fixed', bottom:-150, left:-150, width:500, height:500, background:'radial-gradient(circle,rgba(6,214,160,0.05) 0%,transparent 70%)', pointerEvents:'none', zIndex:0 }}/>
 
-      {/* Auth Modal */}
-      {showModal && (
-        <div style={{ position:'fixed', inset:0, background:'rgba(5,6,10,0.85)', backdropFilter:'blur(12px)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:200, padding:'1.5rem' }}>
-          <div style={{ background:'var(--bg-elevated)', border:'1px solid rgba(99,102,241,0.2)', borderRadius:20, padding:'2rem', width:'100%', maxWidth:380, boxShadow:'0 24px 80px rgba(0,0,0,0.7)' }}>
-            <div style={{ width:56, height:56, borderRadius:16, background:'linear-gradient(135deg,var(--primary),#8b5cf6)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 1rem', boxShadow:'0 0 30px var(--primary-glow)' }}>
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 2L13.8 8.2L20 10L13.8 11.8L12 18L10.2 11.8L4 10L10.2 8.2L12 2Z" fill="white" opacity="0.95"/><path d="M19 16L19.9 18.1L22 19L19.9 19.9L19 22L18.1 19.9L16 19L18.1 18.1L19 16Z" fill="white" opacity="0.7"/><path d="M5 3L5.7 5.3L8 6L5.7 6.7L5 9L4.3 6.7L2 6L4.3 5.3L5 3Z" fill="white" opacity="0.6"/></svg>
-            </div>
-            <div style={{ fontSize:'1.35rem', fontWeight:800, textAlign:'center', background:'linear-gradient(135deg,#fff,var(--primary-l))', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text', marginBottom:'0.35rem' }}>Smart Product Advisor</div>
-            <div style={{ textAlign:'center', fontSize:'0.78rem', color:'var(--text-secondary)', marginBottom:'1.5rem' }}>Sign in to get personalized recommendations</div>
-
-            <div style={{ display:'flex', gap:2, background:'var(--bg-card)', borderRadius:10, padding:3, marginBottom:'1.25rem' }}>
-              {(['login','signup'] as const).map((t) => (
-                <button key={t} onClick={() => { setModalTab(t); setAuthError(''); }} style={{ flex:1, border:'none', background: modalTab===t ? 'var(--primary)' : 'transparent', color: modalTab===t ? 'white' : 'var(--text-secondary)', fontFamily:'inherit', fontSize:'0.82rem', fontWeight:600, padding:'0.5rem', borderRadius:8, cursor:'pointer', boxShadow: modalTab===t ? '0 0 12px var(--primary-glow)' : 'none' }}>
-                  {t === 'login' ? 'Sign In' : 'Create Account'}
-                </button>
-              ))}
-            </div>
-
-            {authError && <div style={{ background:'rgba(244,63,94,0.1)', border:'1px solid rgba(244,63,94,0.3)', borderRadius:8, padding:'0.6rem 0.85rem', fontSize:'0.8rem', color:'var(--rose)', marginBottom:'0.75rem' }}>{authError}</div>}
-
-            {modalTab === 'login' ? (
-              <form onSubmit={handleLogin} style={{ display:'flex', flexDirection:'column', gap:'0.75rem' }}>
-                <div><div style={{ fontSize:'0.75rem', fontWeight:600, color:'var(--text-secondary)', marginBottom:'0.35rem' }}>EMAIL</div><input style={{ width:'100%', background:'var(--bg-input)', border:'1px solid var(--border)', borderRadius:8, padding:'0.65rem 0.9rem', color:'var(--text-primary)', fontFamily:'inherit', fontSize:'0.88rem', outline:'none' }} type="email" placeholder="you@example.com" value={authEmail} onChange={e => setAuthEmail(e.target.value)} required autoComplete="email"/></div>
-                <div><div style={{ fontSize:'0.75rem', fontWeight:600, color:'var(--text-secondary)', marginBottom:'0.35rem' }}>PASSWORD</div><input style={{ width:'100%', background:'var(--bg-input)', border:'1px solid var(--border)', borderRadius:8, padding:'0.65rem 0.9rem', color:'var(--text-primary)', fontFamily:'inherit', fontSize:'0.88rem', outline:'none' }} type="password" placeholder="••••••••" value={authPassword} onChange={e => setAuthPassword(e.target.value)} required autoComplete="current-password"/></div>
-                <button style={{ background:'linear-gradient(135deg,var(--primary),#7c3aed)', color:'white', border:'none', borderRadius:8, padding:'0.75rem', fontSize:'0.9rem', fontWeight:700, cursor:'pointer', fontFamily:'inherit', boxShadow:'0 4px 14px var(--primary-glow)', opacity: authLoading ? 0.5 : 1 }} type="submit" disabled={authLoading}>{authLoading ? 'Signing in…' : 'Sign In'}</button>
-              </form>
-            ) : (
-              <form onSubmit={handleSignup} style={{ display:'flex', flexDirection:'column', gap:'0.75rem' }}>
-                <div><div style={{ fontSize:'0.75rem', fontWeight:600, color:'var(--text-secondary)', marginBottom:'0.35rem' }}>YOUR NAME</div><input style={{ width:'100%', background:'var(--bg-input)', border:'1px solid var(--border)', borderRadius:8, padding:'0.65rem 0.9rem', color:'var(--text-primary)', fontFamily:'inherit', fontSize:'0.88rem', outline:'none' }} type="text" placeholder="John Smith" value={authName} onChange={e => setAuthName(e.target.value)} required autoComplete="name" minLength={2}/></div>
-                <div><div style={{ fontSize:'0.75rem', fontWeight:600, color:'var(--text-secondary)', marginBottom:'0.35rem' }}>EMAIL</div><input style={{ width:'100%', background:'var(--bg-input)', border:'1px solid var(--border)', borderRadius:8, padding:'0.65rem 0.9rem', color:'var(--text-primary)', fontFamily:'inherit', fontSize:'0.88rem', outline:'none' }} type="email" placeholder="you@example.com" value={authEmail} onChange={e => setAuthEmail(e.target.value)} required autoComplete="email"/></div>
-                <div><div style={{ fontSize:'0.75rem', fontWeight:600, color:'var(--text-secondary)', marginBottom:'0.35rem' }}>PASSWORD</div><input style={{ width:'100%', background:'var(--bg-input)', border:'1px solid var(--border)', borderRadius:8, padding:'0.65rem 0.9rem', color:'var(--text-primary)', fontFamily:'inherit', fontSize:'0.88rem', outline:'none' }} type="password" placeholder="Min. 8 characters" value={authPassword} onChange={e => setAuthPassword(e.target.value)} required autoComplete="new-password" minLength={8}/></div>
-                <button style={{ background:'linear-gradient(135deg,var(--primary),#7c3aed)', color:'white', border:'none', borderRadius:8, padding:'0.75rem', fontSize:'0.9rem', fontWeight:700, cursor:'pointer', fontFamily:'inherit', boxShadow:'0 4px 14px var(--primary-glow)', opacity: authLoading ? 0.5 : 1 }} type="submit" disabled={authLoading}>{authLoading ? 'Creating account…' : 'Create Account'}</button>
-              </form>
-            )}
-
-            <div style={{ textAlign:'center', marginTop:'0.75rem', fontSize:'0.75rem', color:'var(--text-muted)' }}>
-              <button onClick={() => { setShowModal(false); startSession(token, userIdRef.current, sessionId, lang); }} style={{ background:'none', border:'none', color:'var(--primary-l)', cursor:'pointer', fontSize:'0.75rem', fontFamily:'inherit', textDecoration:'underline' }}>
-                Continue without account
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Header */}
-      <header style={{ position:'sticky', top:0, zIndex:100, background:'rgba(10,11,15,0.85)', backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)', borderBottom:'1px solid var(--border)', padding:'0 1.5rem', height:64, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-        <div style={{ display:'flex', alignItems:'center', gap:'0.85rem' }}>
-          <div style={{ width:36, height:36, borderRadius:10, background:'linear-gradient(135deg,var(--primary),#8b5cf6)', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 0 16px var(--primary-glow)', flexShrink:0 }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2L13.8 8.2L20 10L13.8 11.8L12 18L10.2 11.8L4 10L10.2 8.2L12 2Z" fill="white" opacity="0.95"/><path d="M19 16L19.9 18.1L22 19L19.9 19.9L19 22L18.1 19.9L16 19L18.1 18.1L19 16Z" fill="white" opacity="0.7"/><path d="M5 3L5.7 5.3L8 6L5.7 6.7L5 9L4.3 6.7L2 6L4.3 5.3L5 3Z" fill="white" opacity="0.6"/></svg>
-          </div>
-          <div>
-            <div style={{ fontSize:'1rem', fontWeight:700, background:'linear-gradient(90deg,var(--text-primary),var(--primary-l))', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text' }}>Smart Product Advisor</div>
-            <div style={{ fontSize:'0.7rem', color:'var(--text-secondary)', marginTop:1 }}>AI-powered recommendations</div>
-          </div>
-        </div>
-        <div style={{ display:'flex', alignItems:'center', gap:'0.75rem' }}>
-          {user ? (
-            <div style={{ display:'flex', alignItems:'center', gap:'0.5rem', background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:20, padding:'0.25rem 0.65rem 0.25rem 0.35rem', fontSize:'0.72rem' }}>
-              <div style={{ width:22, height:22, borderRadius:'50%', background:'linear-gradient(135deg,var(--primary),#8b5cf6)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.65rem', fontWeight:700, color:'white', flexShrink:0 }}>
-                {user.name.charAt(0).toUpperCase()}
-              </div>
-              <span style={{ color:'var(--text-primary)', fontWeight:600, maxWidth:80, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{user.name}</span>
-              <button onClick={handleLogout} style={{ background:'none', border:'none', color:'var(--text-muted)', cursor:'pointer', fontSize:'0.65rem', padding:0, fontFamily:'inherit' }}>Sign out</button>
-            </div>
-          ) : (
-            <div style={{ display:'flex', alignItems:'center', gap:'0.4rem', fontSize:'0.72rem', color:'var(--accent)', fontWeight:600, background:'rgba(6,214,160,0.1)', border:'1px solid rgba(6,214,160,0.2)', borderRadius:20, padding:'0.25rem 0.65rem' }}>
-              <div style={{ width:6, height:6, borderRadius:'50%', background:'var(--accent)', boxShadow:'0 0 8px var(--accent)', animation:'pulse-dot 2s infinite' }}/>
-              Live
-            </div>
-          )}
-          <div style={{ display:'flex', gap:2, background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:10, padding:3 }}>
-            {['EN','PT'].map(l => (
-              <button key={l} onClick={() => setLang(l.toLowerCase())} style={{ border:'none', background: lang.toUpperCase()===l ? 'var(--primary)' : 'transparent', color: lang.toUpperCase()===l ? 'white' : 'var(--text-secondary)', fontSize:'0.7rem', fontWeight:700, padding:'4px 10px', borderRadius:7, cursor:'pointer', fontFamily:'inherit', boxShadow: lang.toUpperCase()===l ? '0 0 10px var(--primary-glow)' : 'none' }}>{l}</button>
-            ))}
-          </div>
-        </div>
-      </header>
+      <Header user={user} lang={lang} onLogout={handleLogout} onLangChange={setLang} />
 
       {/* Main */}
       <div style={{ maxWidth:860, margin:'0 auto', width:'100%', flex:1, minHeight:0, display:'flex', flexDirection:'column', padding:'1.25rem 1rem', gap:'1rem', position:'relative', zIndex:1, overflow:'hidden', height:'calc(100vh - 64px)' }}>

@@ -23,12 +23,19 @@ export default function LoginPage() {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       if (localStorage.getItem('smart_token') && localStorage.getItem('smart_user')) {
         router.replace('/');
+        return;
       }
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('error') === 'google_failed') {
+        setError('Google sign-in failed. Please try again or use email.');
+      }
+      setAuthChecked(true);
     }
   }, [router]);
 
@@ -56,7 +63,7 @@ export default function LoginPage() {
   }
 
   const s = {
-    pageWrap: { minHeight:'100vh', display:'flex', position:'relative' as const, zIndex:1 },
+    pageWrap: { height:'100vh', overflow:'hidden' as const, display:'flex', position:'relative' as const, zIndex:1 },
     rightPanel: { flex:1, display:'flex', flexDirection:'column' as const, justifyContent:'center', alignItems:'center', padding:'2.5rem 2rem', background:'var(--bg-surface)', position:'relative' as const },
     formCard: { width:'100%', maxWidth:420 },
     eyebrow: { fontSize:'0.72rem', fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase' as const, color:'var(--primary-l)', marginBottom:'0.5rem' },
@@ -77,6 +84,8 @@ export default function LoginPage() {
     submitBtn: { width:'100%', background:'linear-gradient(135deg,var(--primary) 0%,#7c3aed 100%)', color:'white', border:'none', borderRadius:10, padding:'0.85rem', fontSize:'0.95rem', fontWeight:700, cursor:'pointer', fontFamily:'inherit', letterSpacing:'0.01em', boxShadow:'0 4px 18px rgba(99,102,241,0.35)', marginTop:'0.5rem', opacity:1 },
     signupLink: { textAlign:'center' as const, fontSize:'0.82rem', color:'var(--text-secondary)' },
   };
+
+  if (!authChecked) return null;
 
   return (
     <div style={s.pageWrap}>
