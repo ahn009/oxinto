@@ -38,11 +38,18 @@ const OfferService = {
     const scored = await RecommendationService.score(session.responses);
     const context = RecommendationService.buildContext(session.responses);
 
-    const offers = {
-      basic: this.buildBasicTier(scored, lang),
-      intermediate: this.buildIntermediateTier(scored, context, lang),
-      premium: this.buildPremiumTier(scored, context, lang),
-    };
+    // Track used product IDs across tiers so no product appears in more than one tier
+    const usedIds = new Set();
+
+    const basic = this.buildBasicTier(scored, lang, usedIds);
+    basic.forEach((p) => usedIds.add(p.id));
+
+    const intermediate = this.buildIntermediateTier(scored, context, lang, usedIds);
+    intermediate.forEach((p) => usedIds.add(p.id));
+
+    const premium = this.buildPremiumTier(scored, context, lang, usedIds);
+
+    const offers = { basic, intermediate, premium };
 
     // Persist recommendations to session
     await SessionModel.update(sessionId, { recommendations: offers, completed: true });
@@ -52,9 +59,9 @@ const OfferService = {
   },
 
   /**
-   * Basic tier: 1-2 most affordable options matching >= 50% criteria.
+   * Basic tier: top 2 CHEAPEST products with score >= 50.
    */
-  buildBasicTier(scored, lang) {
+  buildBasicTier(scored, lang, usedIds = new Set()) {
     return scored
       .filter((p) => p.score >= TIER_THRESHOLDS.basic)
       .sort((a, b) => a.price - b.price) // cheapest first for basic
@@ -72,11 +79,11 @@ const OfferService = {
   },
 
   /**
-   * Intermediate tier: 3-4 products with reasoning labels.
+   * Intermediate tier: top 4 products by score, excluding Basic products.
    */
-  buildIntermediateTier(scored, context, lang) {
+  buildIntermediateTier(scored, context, lang, usedIds = new Set()) {
     const top = scored
-      .filter((p) => p.score >= TIER_THRESHOLDS.basic)
+      .filter((p) => p.score >= TIER_THRESHOLDS.basic && !usedIds.has(p.id))
       .slice(0, 4);
 
     return top.map((p) => ({
@@ -93,11 +100,11 @@ const OfferService = {
   },
 
   /**
-   * Premium tier: best match + bundle suggestion.
-   * Returns null if no product scores >= 85%.
+   * Premium tier: highest scorer not in Basic or Intermediate + bundle suggestion.
+   * Returns null if no eligible product exists.
    */
-  buildPremiumTier(scored, context, lang) {
-    const best = scored[0];
+  buildPremiumTier(scored, context, lang, usedIds = new Set()) {
+    const best = scored.find((p) => !usedIds.has(p.id));
     if (!best) return null;
 
     // If no product is ≥85%, still recommend best available but flag it

@@ -5,20 +5,35 @@ const questionnaireConfig = require('../config/questionnaire');
 const logger = require('../utils/logger');
 
 /**
- * Recommendation Engine — Phase 1 rule-based tag scoring.
+ * Recommendation Engine — rule-based tag scoring with per-user differentiation.
  *
  * Scoring weights:
- *   Category match:   30 pts
+ *   Category match:   35 pts
  *   Budget compat:    25 pts
- *   Feature keywords: 25 pts
- *   Tag overlap:      20 pts
+ *   Tag overlap:      25 pts  (+10 bonus if overlap > 60%)
+ *   Feature keywords: 15 pts  (0 if user skipped free-text question)
+ *
+ * Penalties:
+ *   Price > 30% over budget ceiling: -20 pts
  */
 const WEIGHTS = {
-  category: 30,
+  category: 35,
   budget: 25,
-  feature: 25,
-  tag: 20,
+  tag: 25,
+  feature: 15,
 };
+
+/**
+ * Minimal suffix stemmer so "running" matches "runner", "run", etc.
+ */
+function stem(word) {
+  return word
+    .replace(/ners?$/, 'n')
+    .replace(/ing$/, '')
+    .replace(/ers?$/, '')
+    .replace(/tion$/, '')
+    .replace(/s$/, '');
+}
 
 const RecommendationService = {
   /**
@@ -48,7 +63,7 @@ const RecommendationService = {
 
   /**
    * Build a scoring context from user responses.
-   * Extracts: budget range, collected tags, text keywords.
+   * Extracts: budget range, collected tags, text keywords, category.
    */
   buildContext(responses) {
     const CATEGORY_MAP = ['electronics', 'fashion', 'home', 'health', 'entertainment', 'grocery'];
@@ -59,6 +74,7 @@ const RecommendationService = {
       keywords: [],
       wantsBundle: false,
       category: null,
+      hasFreetextResponse: false,
     };
 
     for (const response of responses) {
@@ -92,10 +108,11 @@ const RecommendationService = {
         context.wantsBundle = true;
       }
 
-      // Free-text keyword extraction
+      // Free-text keyword extraction with stemming
       if (question.type === 'text' && response.answerText) {
+        context.hasFreetextResponse = true;
         const words = response.answerText.toLowerCase().split(/\s+/).filter((w) => w.length > 2);
-        context.keywords.push(...words);
+        context.keywords.push(...words.map(stem));
       }
     }
 
@@ -106,6 +123,7 @@ const RecommendationService = {
       keywords: context.keywords,
       wantsBundle: context.wantsBundle,
       category: context.category,
+      hasFreetextResponse: context.hasFreetextResponse,
     };
   },
 
@@ -115,52 +133,63 @@ const RecommendationService = {
   calculateMatchScore(product, context) {
     let score = 0;
 
-    // 1. Budget compatibility (25 pts)
-    if (product.price >= context.budgetMin && product.price <= context.budgetMax) {
-      score += WEIGHTS.budget;
-    } else if (context.budgetMax !== Infinity) {
-      // Partial credit for being within 20% of budget ceiling
-      const overflow = (product.price - context.budgetMax) / context.budgetMax;
-      if (overflow > 0 && overflow <= 0.2) {
-        score += Math.round(WEIGHTS.budget * (1 - overflow / 0.2));
+    // 1. Category match (35 pts)
+    if (context.category) {
+      if (product.category === context.category) {
+        score += WEIGHTS.category;
       }
+      // No category match → 0 pts (category filter usually handles this already)
+    } else {
+      // No category expressed — award half as neutral
+      score += Math.round(WEIGHTS.category * 0.5);
     }
 
-    // 2. Tag overlap (20 pts)
+    // 2. Budget compatibility (25 pts) with penalty for expensive items
+    if (product.price >= context.budgetMin && product.price <= context.budgetMax) {
+      score += WEIGHTS.budget;
+    } else if (product.price < context.budgetMin) {
+      // Product is cheaper than the user's stated minimum — no budget points
+    } else if (context.budgetMax !== Infinity && product.price > context.budgetMax) {
+      const overflow = (product.price - context.budgetMax) / context.budgetMax;
+      if (overflow > 0.3) {
+        // More than 30% over budget ceiling — apply penalty
+        score -= 20;
+      } else if (overflow <= 0.2) {
+        // Partial credit for being within 20% over
+        score += Math.round(WEIGHTS.budget * (1 - overflow / 0.2));
+      }
+      // Between 20-30% over: no points, no penalty
+    }
+
+    // 3. Tag overlap (25 pts) with bonus for high overlap
     if (context.tags.length > 0 && product.tags && product.tags.length > 0) {
       const productTagSet = new Set(product.tags.map((t) => t.toLowerCase()));
       const matchCount = context.tags.filter((t) => productTagSet.has(t.toLowerCase())).length;
       const overlap = matchCount / context.tags.length;
       score += Math.round(WEIGHTS.tag * Math.min(overlap, 1));
+      if (overlap > 0.6) {
+        score += 10; // bonus for strong tag alignment
+      }
+    } else if (context.tags.length === 0) {
+      score += Math.round(WEIGHTS.tag * 0.5);
     }
 
-    // 3. Feature keyword match (25 pts)
-    if (context.keywords.length > 0 && product.features && product.features.length > 0) {
-      const featureText = product.features.join(' ').toLowerCase();
-      const nameText = (product.name + ' ' + (product.description || '')).toLowerCase();
-      const combined = featureText + ' ' + nameText;
+    // 4. Feature keyword match (15 pts) — 0 if user skipped free-text (q_specific)
+    if (context.hasFreetextResponse && context.keywords.length > 0) {
+      if (product.features && product.features.length > 0) {
+        const featureText = product.features.join(' ').toLowerCase();
+        const nameText = (product.name + ' ' + (product.description || '')).toLowerCase();
+        const combined = featureText + ' ' + nameText;
+        const stemmedTokens = combined.split(/\s+/).map(stem);
 
-      const matchCount = context.keywords.filter((kw) => combined.includes(kw)).length;
-      const keywordScore = matchCount / context.keywords.length;
-      score += Math.round(WEIGHTS.feature * Math.min(keywordScore, 1));
-    } else if (context.keywords.length === 0) {
-      // No free-text: award half points as neutral
-      score += Math.round(WEIGHTS.feature * 0.5);
+        const matchCount = context.keywords.filter((kw) => stemmedTokens.includes(stem(kw))).length;
+        const keywordScore = matchCount / context.keywords.length;
+        score += Math.round(WEIGHTS.feature * Math.min(keywordScore, 1));
+      }
     }
+    // If no free-text response: fall back to category + tag scoring only (feature = 0)
 
-    // 4. Category heuristic (30 pts)
-    // Since all sample products are 'audio', award based on tag alignment instead
-    const tagScore = score; // already computed above
-    if (context.tags.length === 0) {
-      // No preferences expressed — give equal chance
-      score += Math.round(WEIGHTS.category * 0.5);
-    } else if (tagScore > WEIGHTS.tag * 0.5) {
-      score += WEIGHTS.category;
-    } else if (tagScore > 0) {
-      score += Math.round(WEIGHTS.category * 0.5);
-    }
-
-    return Math.min(Math.round(score), 100);
+    return Math.min(Math.max(Math.round(score), 0), 100);
   },
 
   /**

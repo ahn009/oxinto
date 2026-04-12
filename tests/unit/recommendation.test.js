@@ -78,14 +78,14 @@ describe('RecommendationService', () => {
     });
 
     it('awards feature keyword match points', () => {
-      const ctx = { tags: [], budgetMin: 0, budgetMax: Infinity, keywords: ['noise-canceling'], wantsBundle: false };
+      const ctx = { tags: [], budgetMin: 0, budgetMax: Infinity, keywords: ['noise-canceling'], wantsBundle: false, hasFreetextResponse: true };
       const proScore = RecommendationService.calculateMatchScore(sampleProducts[2], ctx); // has noise-canceling
       const basicScore = RecommendationService.calculateMatchScore(sampleProducts[0], ctx); // does not
       expect(proScore).toBeGreaterThan(basicScore);
     });
 
     it('returns score between 0 and 100', () => {
-      const ctx = { tags: ['budget', 'value'], budgetMin: 0, budgetMax: 50, keywords: ['good'], wantsBundle: false };
+      const ctx = { tags: ['budget', 'value'], budgetMin: 0, budgetMax: 50, keywords: ['good'], wantsBundle: false, hasFreetextResponse: true };
       sampleProducts.forEach(p => {
         const score = RecommendationService.calculateMatchScore(p, ctx);
         expect(score).toBeGreaterThanOrEqual(0);

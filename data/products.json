@@ -4,7 +4,7 @@
     "description": "6.1-inch Super Retina XDR display, A16 Bionic chip, 48MP camera system. Perfect for work, creativity, and everyday life.",
     "price": 799,
     "category": "electronics",
-    "tags": ["mobile", "computing", "apple", "ios", "premium", "specs"],
+    "tags": ["electronics", "mobile", "computing", "apple", "ios", "premium", "specs"],
     "features": ["48MP camera", "A16 Bionic", "iOS ecosystem", "5G", "Face ID", "USB-C"],
     "images": ["/images/iphone15.jpg"],
     "stock": 50
@@ -14,7 +14,7 @@
     "description": "6.2-inch Dynamic AMOLED display with Galaxy AI features. Brilliant display, pro-grade camera.",
     "price": 799,
     "category": "electronics",
-    "tags": ["mobile", "computing", "samsung", "android", "premium", "specs"],
+    "tags": ["electronics", "mobile", "computing", "samsung", "android", "premium", "specs"],
     "features": ["50MP camera", "Snapdragon 8 Gen 3", "Android", "Galaxy AI", "5G", "S-Pen compatible"],
     "images": ["/images/galaxys24.jpg"],
     "stock": 60
@@ -24,17 +24,17 @@
     "description": "Industry-leading noise cancellation with 30-hour battery life. Perfect for work and travel.",
     "price": 349,
     "category": "electronics",
-    "tags": ["audio", "wearables", "premium", "specs", "professional", "productivity"],
+    "tags": ["electronics", "audio", "wearables", "premium", "specs", "professional", "productivity"],
     "features": ["noise-canceling", "30h battery", "LDAC", "multipoint", "touch controls", "foldable"],
     "images": ["/images/sonyxm5.jpg"],
     "stock": 40
   },
   {
     "name": "Apple AirPods Pro (2nd Gen)",
-    "description": "Adaptive Transparency, Personalized Spatial Audio, and 2× better ANC than before.",
+    "description": "Adaptive Transparency, Personalized Spatial Audio, and 2x better ANC than before.",
     "price": 249,
     "category": "electronics",
-    "tags": ["audio", "wearables", "apple", "ios", "premium", "casual"],
+    "tags": ["electronics", "audio", "wearables", "apple", "ios", "premium", "casual"],
     "features": ["ANC", "Spatial Audio", "H2 chip", "USB-C", "6h battery", "water resistant"],
     "images": ["/images/airpodspro.jpg"],
     "stock": 75
@@ -44,7 +44,7 @@
     "description": "Play at home on the TV or on-the-go. Vibrant 7-inch OLED screen, enhanced audio.",
     "price": 349,
     "category": "electronics",
-    "tags": ["gaming", "vr", "casual", "portable", "value"],
+    "tags": ["electronics", "gaming", "vr", "casual", "portable", "value"],
     "features": ["OLED screen", "handheld mode", "TV mode", "Joy-Con controllers", "64GB storage"],
     "images": ["/images/switcholed.jpg"],
     "stock": 30
@@ -54,10 +54,30 @@
     "description": "Compact mirrorless camera with 24.2MP sensor, 4K video, and AI subject detection.",
     "price": 679,
     "category": "electronics",
-    "tags": ["photography", "drones", "creative", "professional", "specs"],
+    "tags": ["electronics", "photography", "drones", "creative", "professional", "specs"],
     "features": ["24.2MP APS-C", "4K video", "AI tracking", "RF mount", "Wi-Fi", "touch screen"],
     "images": ["/images/canonr50.jpg"],
     "stock": 20
+  },
+  {
+    "name": "Anker Wireless Charger Pad",
+    "description": "10W fast wireless charging pad compatible with all Qi-enabled devices. Sleek and compact.",
+    "price": 22,
+    "category": "electronics",
+    "tags": ["electronics", "mobile", "wearables", "value", "casual", "compact"],
+    "features": ["10W fast charge", "Qi compatible", "LED indicator", "non-slip surface", "compact design"],
+    "images": ["/images/ankercharger.jpg"],
+    "stock": 200
+  },
+  {
+    "name": "Logitech MX Master 3S Mouse",
+    "description": "Advanced wireless mouse with ultra-fast scroll wheel and near-silent clicks for productivity.",
+    "price": 99,
+    "category": "electronics",
+    "tags": ["electronics", "computing", "professional", "productivity", "value", "specs"],
+    "features": ["8000 DPI sensor", "MagSpeed scroll", "USB-C charging", "multi-device", "quiet clicks"],
+    "images": ["/images/mxmaster3s.jpg"],
+    "stock": 80
   },
 
   {
@@ -65,7 +85,7 @@
     "description": "Lifestyle sneaker with the largest Air unit yet. Lightweight, cushioned, and iconic.",
     "price": 150,
     "category": "fashion",
-    "tags": ["footwear", "casual", "athletic", "sport", "regular"],
+    "tags": ["fashion", "footwear", "casual", "athletic", "sport", "regular"],
     "features": ["Air Max unit", "mesh upper", "rubber outsole", "multiple colorways", "unisex sizes"],
     "images": ["/images/airmax270.jpg"],
     "stock": 100
@@ -75,7 +95,7 @@
     "description": "The original button-fly jeans. Straight fit, sturdy denim, timeless style since 1873.",
     "price": 80,
     "category": "fashion",
-    "tags": ["clothing", "casual", "regular", "streetwear", "classic"],
+    "tags": ["fashion", "clothing", "casual", "regular", "streetwear", "classic"],
     "features": ["100% cotton", "button fly", "straight fit", "multiple washes", "durable denim"],
     "images": ["/images/levis501.jpg"],
     "stock": 200
@@ -85,7 +105,7 @@
     "description": "Most powerful Apple Watch with double tap gesture, always-on Retina display, and health sensors.",
     "price": 399,
     "category": "fashion",
-    "tags": ["accessories", "jewelry", "apple", "ios", "premium", "fitness"],
+    "tags": ["fashion", "accessories", "jewelry", "apple", "ios", "premium", "fitness"],
     "features": ["Double tap", "Always-on display", "ECG", "Blood oxygen", "crash detection", "GPS"],
     "images": ["/images/applewatch9.jpg"],
     "stock": 45
@@ -95,18 +115,38 @@
     "description": "Classic hiking-inspired backpack with padded 15-inch laptop sleeve. Built to last.",
     "price": 95,
     "category": "fashion",
-    "tags": ["bags", "accessories", "casual", "streetwear", "outdoor"],
+    "tags": ["fashion", "bags", "accessories", "casual", "streetwear", "outdoor"],
     "features": ["25L capacity", "laptop sleeve", "padded straps", "fleece lining", "drawstring top"],
     "images": ["/images/herschel.jpg"],
     "stock": 80
   },
+  {
+    "name": "Ray-Ban Wayfarer Sunglasses",
+    "description": "Iconic Wayfarer silhouette with G-15 lenses. Timeless style for every face shape.",
+    "price": 175,
+    "category": "fashion",
+    "tags": ["fashion", "accessories", "jewelry", "casual", "formal", "classic", "premium"],
+    "features": ["G-15 lens", "UV400 protection", "acetate frame", "unisex", "gift-ready box"],
+    "images": ["/images/rayban.jpg"],
+    "stock": 60
+  },
+  {
+    "name": "Adidas Ultraboost 23 Running Shoes",
+    "description": "Record-breaking energy return with BOOST midsole. Engineered mesh upper for runners.",
+    "price": 190,
+    "category": "fashion",
+    "tags": ["fashion", "footwear", "sport", "athletic", "outdoor", "performance", "premium"],
+    "features": ["BOOST midsole", "Continental rubber", "Primeknit upper", "Torsion system", "lightweight"],
+    "images": ["/images/ultraboost.jpg"],
+    "stock": 70
+  },
 
   {
     "name": "Instant Pot Duo 7-in-1",
-    "description": "Pressure cooker, slow cooker, rice cooker, steamer, sauté, yogurt maker & warmer in one.",
+    "description": "Pressure cooker, slow cooker, rice cooker, steamer, saute, yogurt maker and warmer in one.",
     "price": 99,
     "category": "home",
-    "tags": ["appliances", "kitchen", "compact", "value", "modern"],
+    "tags": ["home", "appliances", "kitchen", "compact", "value", "modern"],
     "features": ["7-in-1 functions", "6 quart", "dishwasher safe", "15 smart programs", "stainless steel"],
     "images": ["/images/instantpot.jpg"],
     "stock": 90
@@ -116,7 +156,7 @@
     "description": "Barista-quality coffee at home. One-touch brewing, 5 cup sizes from espresso to alto.",
     "price": 179,
     "category": "home",
-    "tags": ["appliances", "kitchen", "premium", "modern", "minimalist"],
+    "tags": ["home", "appliances", "kitchen", "premium", "modern", "minimalist"],
     "features": ["Centrifusion technology", "5 cup sizes", "15-second heat-up", "automatic capsule ejection"],
     "images": ["/images/nespresso.jpg"],
     "stock": 55
@@ -126,8 +166,8 @@
     "description": "Versatile shelving unit. Use as a room divider or combine with inserts for storage.",
     "price": 129,
     "category": "home",
-    "tags": ["furniture", "minimalist", "scandinavian", "medium", "value"],
-    "features": ["4×4 cubes", "16 squares", "holds 13kg per cube", "can be wall-mounted", "flat-pack"],
+    "tags": ["home", "furniture", "minimalist", "scandinavian", "medium", "value"],
+    "features": ["4x4 cubes", "16 squares", "holds 13kg per cube", "can be wall-mounted", "flat-pack"],
     "images": ["/images/kallax.jpg"],
     "stock": 40
   },
@@ -136,10 +176,20 @@
     "description": "Natural hand-carved salt crystal lamp with warm amber glow. Adds cosy ambiance to any room.",
     "price": 29,
     "category": "home",
-    "tags": ["decor", "cosy", "rustic", "classic", "compact", "budget"],
+    "tags": ["home", "decor", "cosy", "rustic", "classic", "compact", "budget"],
     "features": ["natural salt crystal", "warm amber glow", "dimmable switch", "wooden base", "15W bulb"],
     "images": ["/images/saltlamp.jpg"],
     "stock": 150
+  },
+  {
+    "name": "Dyson V15 Detect Cordless Vacuum",
+    "description": "Laser reveals hidden dust. Automatically adapts suction for every floor type.",
+    "price": 699,
+    "category": "home",
+    "tags": ["home", "appliances", "kitchen", "premium", "modern", "large", "effective"],
+    "features": ["laser detect", "HEPA filtration", "60 min runtime", "LCD screen", "auto-adjust suction"],
+    "images": ["/images/dysonv15.jpg"],
+    "stock": 25
   },
 
   {
@@ -147,7 +197,7 @@
     "description": "Rich 24-hour moisturizing cream with ceramides and hyaluronic acid. Dermatologist recommended.",
     "price": 19,
     "category": "health",
-    "tags": ["skincare", "dry", "sensitive", "natural", "effective", "budget"],
+    "tags": ["health", "skincare", "dry", "sensitive", "natural", "effective", "budget"],
     "features": ["ceramides", "hyaluronic acid", "fragrance-free", "non-comedogenic", "MVE delivery"],
     "images": ["/images/cerave.jpg"],
     "stock": 200
@@ -157,18 +207,18 @@
     "description": "Styles, waves, curls and dries with no extreme heat. Protects hair from heat damage.",
     "price": 599,
     "category": "health",
-    "tags": ["haircare", "premium", "luxury", "anti-aging", "effective"],
+    "tags": ["health", "haircare", "premium", "luxury", "anti-aging", "effective", "performance"],
     "features": ["Coanda effect", "no extreme heat", "multiple attachments", "2-year warranty", "long-life motor"],
     "images": ["/images/dysonairwrap.jpg"],
     "stock": 15
   },
   {
     "name": "Bowflex SelectTech 552 Dumbbells",
-    "description": "Adjustable dumbbells that replace 15 sets of weights. Select from 5–52.5 lbs in seconds.",
+    "description": "Adjustable dumbbells that replace 15 sets of weights. Select from 5-52.5 lbs in seconds.",
     "price": 349,
     "category": "health",
-    "tags": ["fitness", "gym", "strength", "performance", "intermediate", "advanced"],
-    "features": ["5–52.5 lbs", "adjustable dial", "compact", "2-year warranty", "replaces 15 sets"],
+    "tags": ["health", "fitness", "gym", "strength", "performance", "intermediate", "advanced"],
+    "features": ["5-52.5 lbs", "adjustable dial", "compact", "2-year warranty", "replaces 15 sets"],
     "images": ["/images/bowflex.jpg"],
     "stock": 25
   },
@@ -177,10 +227,30 @@
     "description": "Certified organic whole food multivitamin. Non-GMO, vegan, and gluten-free.",
     "price": 45,
     "category": "health",
-    "tags": ["supplements", "vitamins", "organic", "vegan", "natural", "gluten-free"],
+    "tags": ["health", "supplements", "vitamins", "organic", "vegan", "natural", "gluten-free"],
     "features": ["certified organic", "whole food based", "non-GMO", "vegan", "gluten-free", "30-day supply"],
     "images": ["/images/gardenoflife.jpg"],
     "stock": 100
+  },
+  {
+    "name": "La Roche-Posay SPF 50 Sunscreen",
+    "description": "Broad-spectrum mineral sunscreen for sensitive skin. Lightweight, non-greasy formula.",
+    "price": 38,
+    "category": "health",
+    "tags": ["health", "skincare", "sensitive", "natural", "clinical", "science", "effective"],
+    "features": ["SPF 50", "broad-spectrum UVA/UVB", "mineral filter", "fragrance-free", "paraben-free"],
+    "images": ["/images/larochespf.jpg"],
+    "stock": 120
+  },
+  {
+    "name": "Theragun Mini Massage Gun",
+    "description": "Compact percussive therapy device for muscle recovery. Quiet and portable.",
+    "price": 199,
+    "category": "health",
+    "tags": ["health", "fitness", "gym", "performance", "strength", "portable", "effective"],
+    "features": ["2400 RPM", "3 speed settings", "quiet motor", "120 min battery", "3 attachments"],
+    "images": ["/images/theragun.jpg"],
+    "stock": 45
   },
 
   {
@@ -188,7 +258,7 @@
     "description": "Thinner, lighter Kindle with a 6.8-inch glare-free display and 10 weeks battery life.",
     "price": 139,
     "category": "entertainment",
-    "tags": ["books", "reading", "indoor", "beginner", "intermediate", "portable"],
+    "tags": ["entertainment", "books", "reading", "indoor", "beginner", "intermediate", "portable"],
     "features": ["6.8-inch display", "300ppi", "waterproof IPX8", "10-week battery", "adjustable warm light"],
     "images": ["/images/kindle.jpg"],
     "stock": 70
@@ -198,7 +268,7 @@
     "description": "Award-winning strategy game for 3-4 players. Build settlements, cities and roads to win.",
     "price": 45,
     "category": "entertainment",
-    "tags": ["games", "puzzles", "indoor", "beginner", "intermediate", "gift"],
+    "tags": ["entertainment", "games", "puzzles", "indoor", "beginner", "intermediate", "gift"],
     "features": ["2-4 players", "60-90 min playtime", "strategy game", "expandable", "award-winning"],
     "images": ["/images/catan.jpg"],
     "stock": 80
@@ -208,7 +278,7 @@
     "description": "Authentic piano experience with 88 weighted keys and Yamaha GHS action.",
     "price": 449,
     "category": "entertainment",
-    "tags": ["music", "instruments", "indoor", "beginner", "intermediate", "advanced"],
+    "tags": ["entertainment", "music", "instruments", "indoor", "beginner", "intermediate", "advanced"],
     "features": ["88 weighted keys", "GHS action", "10 voices", "headphone output", "sustain pedal"],
     "images": ["/images/yamahap45.jpg"],
     "stock": 20
@@ -218,10 +288,20 @@
     "description": "Roger Federer's racket of choice. Precision control for intermediate to advanced players.",
     "price": 229,
     "category": "entertainment",
-    "tags": ["sports", "outdoor", "intermediate", "advanced", "premium"],
+    "tags": ["entertainment", "sports", "outdoor", "intermediate", "advanced", "premium"],
     "features": ["97 sq in head", "315g weight", "carbon fiber", "leather grip", "braided graphite"],
     "images": ["/images/wilson.jpg"],
     "stock": 30
+  },
+  {
+    "name": "Lego Creator Expert Bookshop (2678 pcs)",
+    "description": "Detailed modular building set. Build and display the iconic downtown bookshop.",
+    "price": 209,
+    "category": "entertainment",
+    "tags": ["entertainment", "games", "puzzles", "indoor", "advanced", "gift", "premium"],
+    "features": ["2678 pieces", "modular design", "interior detail", "3 floors", "collectible minifigures"],
+    "images": ["/images/legobookshop.jpg"],
+    "stock": 35
   },
 
   {
@@ -229,7 +309,7 @@
     "description": "Gluten-free snack bars made with whole nuts and real fruit. No artificial flavors.",
     "price": 22,
     "category": "grocery",
-    "tags": ["snacks", "beverages", "gluten-free", "value", "one-time", "weekly"],
+    "tags": ["grocery", "snacks", "beverages", "gluten-free", "value", "one-time", "weekly"],
     "features": ["gluten-free", "no GMOs", "6g+ protein", "24 bars", "6 flavor variety"],
     "images": ["/images/kindbars.jpg"],
     "stock": 300
@@ -239,7 +319,7 @@
     "description": "Organic baby spinach, arugula and spring mix. USDA certified organic, pre-washed.",
     "price": 5,
     "category": "grocery",
-    "tags": ["organic", "health-food", "vegan", "vegetarian", "daily", "frequent"],
+    "tags": ["grocery", "organic", "health-food", "vegan", "vegetarian", "daily", "frequent"],
     "features": ["USDA organic", "pre-washed", "5oz", "non-GMO", "vegan", "gluten-free"],
     "images": ["/images/organicgirl.jpg"],
     "stock": 500
@@ -249,17 +329,17 @@
     "description": "Plant-based all-purpose cleaner. Cleans 99.9% of bacteria without harsh chemicals.",
     "price": 28,
     "category": "grocery",
-    "tags": ["cleaning", "household", "natural", "organic", "bulk", "weekly"],
+    "tags": ["grocery", "cleaning", "household", "natural", "organic", "bulk", "weekly"],
     "features": ["plant-based", "biodegradable", "6-pack", "lavender scent", "recyclable bottle"],
     "images": ["/images/method.jpg"],
     "stock": 150
   },
   {
     "name": "Blue Buffalo Life Protection Dog Food",
-    "description": "Real chicken & brown rice formula. No chicken by-product meals, no corn, wheat or soy.",
+    "description": "Real chicken and brown rice formula. No chicken by-product meals, no corn, wheat or soy.",
     "price": 55,
     "category": "grocery",
-    "tags": ["pets", "natural", "effective", "weekly", "bulk"],
+    "tags": ["grocery", "pets", "natural", "effective", "weekly", "bulk"],
     "features": ["real chicken #1 ingredient", "LifeSource Bits", "no by-products", "no corn/wheat/soy", "30lb bag"],
     "images": ["/images/bluebuffalo.jpg"],
     "stock": 80
