@@ -1,0 +1,13 @@
+{
+  "id": "session-1775981241062",
+  "startedAt": "2026-04-12T08:07:21.062Z",
+  "platform": "linux",
+  "cwd": "/home/ahsan2411/projects/Smart-Ai-Porduction/project/frontend",
+  "context": {},
+  "metrics": {
+    "edits": 0,
+    "commands": 0,
+    "tasks": 0,
+    "errors": 0
+  }
+}

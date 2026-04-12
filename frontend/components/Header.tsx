@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import type { User } from '@/lib/api';
 
 interface Props {
@@ -40,20 +41,9 @@ export default function Header({ user, lang, onLogout, onLangChange }: Props) {
     <header style={{ position:'sticky', top:0, zIndex:100, background:'rgba(10,11,15,0.88)', backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)', borderBottom:'1px solid var(--border)', padding:'0 1.5rem', height:64, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
 
       {/* Logo */}
-      <Link href="/" style={{ display:'flex', alignItems:'center', gap:'0.85rem', textDecoration:'none' }}>
-        <div style={{ width:36, height:36, borderRadius:10, background:'linear-gradient(135deg,var(--primary),#8b5cf6)', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 0 16px var(--primary-glow)', flexShrink:0 }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2L13.8 8.2L20 10L13.8 11.8L12 18L10.2 11.8L4 10L10.2 8.2L12 2Z" fill="white" opacity="0.95"/>
-            <path d="M19 16L19.9 18.1L22 19L19.9 19.9L19 22L18.1 19.9L16 19L18.1 18.1L19 16Z" fill="white" opacity="0.7"/>
-            <path d="M5 3L5.7 5.3L8 6L5.7 6.7L5 9L4.3 6.7L2 6L4.3 5.3L5 3Z" fill="white" opacity="0.6"/>
-          </svg>
-        </div>
-        <div>
-          <div style={{ fontSize:'1rem', fontWeight:700, background:'linear-gradient(90deg,var(--text-primary),var(--primary-l))', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text' }}>
-            Smart Product Advisor
-          </div>
-          <div style={{ fontSize:'0.7rem', color:'var(--text-secondary)', marginTop:1 }}>AI-powered recommendations</div>
-        </div>
+      <Link href="/" style={{ display:'flex', alignItems:'center', gap:'0.65rem', textDecoration:'none' }}>
+        <Image src="/optixo.png" alt="OPTIXO" width={36} height={36} style={{ borderRadius:8, objectFit:'contain' }} />
+        <span style={{ fontSize:'1.1rem', fontWeight:800, letterSpacing:'-0.02em', background:'linear-gradient(90deg,var(--text-primary),var(--primary-l))', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text' }}>OPTIXO</span>
       </Link>
 
       {/* Right side */}

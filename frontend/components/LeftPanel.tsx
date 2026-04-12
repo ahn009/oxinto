@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 interface Feature {
   icon: string;
   color: 'indigo' | 'teal' | 'purple' | 'gold';
@@ -19,13 +21,6 @@ interface LeftPanelProps {
   stats: Stat[];
 }
 
-const LogoSVG = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-    <path d="M12 2L13.8 8.2L20 10L13.8 11.8L12 18L10.2 11.8L4 10L10.2 8.2L12 2Z" fill="white" opacity="0.95"/>
-    <path d="M19 16L19.9 18.1L22 19L19.9 19.9L19 22L18.1 19.9L16 19L18.1 18.1L19 16Z" fill="white" opacity="0.7"/>
-    <path d="M5 3L5.7 5.3L8 6L5.7 6.7L5 9L4.3 6.7L2 6L4.3 5.3L5 3Z" fill="white" opacity="0.6"/>
-  </svg>
-);
 
 const dotColors: Record<string, React.CSSProperties> = {
   indigo: { background: 'rgba(99,102,241,0.18)', border: '1px solid rgba(99,102,241,0.25)' },
@@ -55,13 +50,9 @@ export default function LeftPanel({ headline, sub, features, stats }: LeftPanelP
       <div style={{ position:'absolute', inset:0, backgroundImage:'radial-gradient(rgba(255,255,255,0.06) 1px,transparent 1px)', backgroundSize:'28px 28px', pointerEvents:'none' }}/>
 
       {/* Logo */}
-      <div style={{ display:'flex', alignItems:'center', gap:'0.75rem', position:'relative', zIndex:2 }}>
-        <div style={{ width:40, height:40, borderRadius:11, background:'linear-gradient(135deg,var(--primary),#8b5cf6)', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 0 20px var(--primary-glow)', flexShrink:0 }}>
-          <LogoSVG />
-        </div>
-        <div style={{ fontSize:'1rem', fontWeight:700, background:'linear-gradient(90deg,#fff,var(--primary-l))', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text' }}>
-          Smart Product Advisor
-        </div>
+      <div style={{ display:'flex', alignItems:'center', gap:'0.65rem', position:'relative', zIndex:2 }}>
+        <Image src="/optixo.png" alt="OPTIXO" width={40} height={40} style={{ borderRadius:10, objectFit:'contain' }} />
+        <span style={{ fontSize:'1.1rem', fontWeight:800, letterSpacing:'-0.02em', background:'linear-gradient(90deg,#fff,var(--primary-l))', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text' }}>OPTIXO</span>
       </div>
 
       {/* Center */}

@@ -24,6 +24,7 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -35,9 +36,14 @@ export default function SignupPage() {
     }
   }, [router]);
 
+  function handleTermsClick(e: React.MouseEvent) {
+    if (!agreedToTerms) { e.preventDefault(); setError('Please agree to the Terms of Service and Privacy Policy first.'); }
+  }
+
   async function handleSendOtp(e: React.FormEvent) {
     e.preventDefault();
     setError('');
+    if (!agreedToTerms) { setError('You must agree to the Terms of Service and Privacy Policy to continue.'); return; }
     if (name.trim().length < 2) { setError('Name must be at least 2 characters.'); return; }
     if (!email.includes('@'))    { setError('Enter a valid email address.'); return; }
     if (password.length < 8)     { setError('Password must be at least 8 characters.'); return; }
@@ -137,7 +143,22 @@ export default function SignupPage() {
               <input style={s.fieldInput} type="password" placeholder="Minimum 8 characters" value={password} onChange={e => setPassword(e.target.value)} autoComplete="new-password" required minLength={8} maxLength={128}/>
               <div style={s.passHint}>At least 8 characters</div>
             </div>
-            <button style={{ ...s.submitBtn, opacity: loading ? 0.5 : 1 }} type="submit" disabled={loading}>
+            {/* Terms checkbox */}
+            <label style={{ display:'flex', alignItems:'flex-start', gap:'0.6rem', cursor:'pointer' }}>
+              <input
+                type="checkbox"
+                checked={agreedToTerms}
+                onChange={e => { setAgreedToTerms(e.target.checked); setError(''); }}
+                style={{ width:15, height:15, accentColor:'var(--primary)', cursor:'pointer', marginTop:2, flexShrink:0 }}
+              />
+              <span style={{ fontSize:'0.78rem', color:'var(--text-secondary)', lineHeight:1.5 }}>
+                I agree to the{' '}
+                <Link href="/terms" onClick={handleTermsClick} style={{ color:'var(--primary-l)', fontWeight:600 }}>Terms of Service</Link>
+                {' '}and{' '}
+                <Link href="/privacy" onClick={handleTermsClick} style={{ color:'var(--primary-l)', fontWeight:600 }}>Privacy Policy</Link>
+              </span>
+            </label>
+            <button style={{ ...s.submitBtn, opacity: (loading || !agreedToTerms) ? 0.5 : 1 }} type="submit" disabled={loading || !agreedToTerms}>
               {loading ? 'Sending code…' : 'Send Verification Code'}
             </button>
           </form>
