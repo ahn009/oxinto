@@ -32,9 +32,10 @@ export default function Header({ user, lang, onLogout, onLangChange }: Props) {
     .slice(0, 2);
 
   const menuItems = [
-    { href: '/',         icon: '⌂', label: 'Home' },
-    { href: '/profile',  icon: '◎', label: 'Profile' },
-    { href: '/settings', icon: '⚙', label: 'Settings' },
+    { href: '/',            icon: '⌂', label: 'Home' },
+    { href: '/recommend',   icon: '✦', label: 'Discover' },
+    { href: '/profile',     icon: '◎', label: 'Profile' },
+    { href: '/settings',    icon: '⚙', label: 'Settings' },
   ];
 
   return (

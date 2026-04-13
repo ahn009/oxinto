@@ -112,6 +112,37 @@ export async function getProducts(category?: string) {
   return request<{ products: unknown[] }>(url);
 }
 
+// ── HF Recommendations ─────────────────────────────────────────────────────
+
+/**
+ * Call the Hugging Face backend recommendation endpoint directly.
+ * Uses NEXT_PUBLIC_API_URL so no proxy is needed.
+ */
+export async function getRecommendations(query: string): Promise<{ products: RecommendProduct[] }> {
+  const base = process.env.NEXT_PUBLIC_API_URL;
+  if (!base) throw new Error('NEXT_PUBLIC_API_URL is not set');
+
+  const res = await fetch(`${base}/recommend`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query }),
+  });
+
+  let json: unknown;
+  try { json = await res.json(); } catch { json = {}; }
+
+  if (!res.ok) {
+    const msg =
+      (json as Record<string, string>).detail ||
+      (json as Record<string, string>).error ||
+      `Request failed (${res.status})`;
+    throw new Error(msg);
+  }
+
+  console.log('[getRecommendations] response:', json);
+  return json as { products: RecommendProduct[] };
+}
+
 // ── Health ─────────────────────────────────────────────────────────────────
 
 export async function healthCheck() {
@@ -145,6 +176,19 @@ export interface Product {
   score?: number;
   reason?: string;
   tags?: string[];
+}
+
+export interface RecommendProduct {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  tags: string[];
+  features: string[];
+  score: number;
+  reason: string;
+  images: string[];
 }
 
 export interface Bundle {
