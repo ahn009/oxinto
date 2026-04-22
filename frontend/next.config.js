@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   async rewrites() {
-    const backend = process.env.BACKEND_URL || 'https://ahn009-oxinto-ai.hf.space';
+    const backend = process.env.BACKEND_URL || 'https://ahn009-oxinto-backend.hf.space';
     return [
       {
         source: '/api/:path*',
