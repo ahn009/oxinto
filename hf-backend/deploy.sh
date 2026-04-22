@@ -18,7 +18,7 @@ echo "Deploying Oxinto Node.js backend to HF Spaces..."
 
 # Authenticate
 if [ -z "${HF_TOKEN:-}" ]; then
-  huggingface-cli whoami || { echo "Run: huggingface-cli login"; exit 1; }
+  hf auth whoami || { echo "Run: hf auth login"; exit 1; }
 fi
 
 # Clone or update HF Space repo
