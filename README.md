@@ -1,6 +1,6 @@
 # Smart AI Product Recommendation System
 
-A production-ready, multi-channel AI-powered product recommendation system. Guides users through a structured questionnaire and delivers personalised 3-tier product recommendations via a Next.js web chat UI, WhatsApp (Twilio), and Instagram (Meta Messenger).
+A production-ready, multi-channel AI-powered product recommendation system. Guides users through a structured questionnaire and delivers personalised 3-tier product recommendations via a Next.js web chat UI, WhatsApp (Twilio), and Instagram (Meta Messenger)  .
 
 ---
 
