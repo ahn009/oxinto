@@ -14,6 +14,8 @@ export function getAuthHeaders(): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
+const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ahn009-oxinto-backend.hf.space';
+
 /** Generic fetch wrapper. Throws Error with server message on non-ok status. */
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const headers: Record<string, string> = {
@@ -22,7 +24,8 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     ...(options.headers as Record<string, string> || {}),
   };
 
-  const res = await fetch(path, { ...options, headers });
+  const url = path.startsWith('http') ? path : `${BACKEND}${path}`;
+  const res = await fetch(url, { ...options, headers });
   let json: unknown;
   try { json = await res.json(); } catch { json = {}; }
 
@@ -100,7 +103,7 @@ export async function sendWebMessage(
   const body: Record<string, unknown> = { userId, message, language };
   if (sessionId) body.sessionId = sessionId;
 
-  const res = await fetch('/api/webhook/web', { method: 'POST', headers, body: JSON.stringify(body) });
+  const res = await fetch(`${BACKEND}/api/webhook/web`, { method: 'POST', headers, body: JSON.stringify(body) });
   if (!res.ok) throw new Error(`API error ${res.status}`);
   return res.json();
 }
